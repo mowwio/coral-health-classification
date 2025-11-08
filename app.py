@@ -10,17 +10,17 @@ st.set_page_config(
     layout="centered"
 )
 
-# --- URL Backend API ---
+# URL Backend API 
 API_URL = "http://127.0.0.1:8000/predict"
 
-# --- Judul & Deskripsi ---
+# Judul & Deskripsi
 st.title("🪸 Sistem Deteksi Kesehatan Terumbu Karang")
 st.write("""
 Unggah gambar terumbu karang untuk diprediksi. 
 Model akan mengklasifikasikan apakah karang tersebut 'Healthy' (Sehat) atau 'Bleached' (Memutih).
 """)
 
-# --- File Uploader ---
+# File Uploader 
 uploaded_file = st.file_uploader(
     "Pilih sebuah gambar...", 
     type=["jpg", "jpeg", "png"]
@@ -38,7 +38,6 @@ if uploaded_file is not None:
         with st.spinner("Model sedang menganalisis..."):
             
             # 3. Siapkan file untuk dikirim ke API
-            # Kita perlu membaca ulang file dalam format 'bytes'
             file_bytes = io.BytesIO(uploaded_file.getvalue())
             files_to_send = {'file': (uploaded_file.name, file_bytes, uploaded_file.type)}
             

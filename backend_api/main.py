@@ -8,20 +8,17 @@ import io
 import sqlite3
 from datetime import datetime
 
-# --- 1. Inisialisasi Aplikasi FastAPI & Konstanta ---
+# 1. Inisialisasi Aplikasi FastAPI 
 app = FastAPI(title="API Deteksi Kesehatan Terumbu Karang")
 
 MODEL_PATH = "coral_model_best.h5"
 IMG_HEIGHT = 224
 IMG_WIDTH = 224
-# Pastikan urutan ini SAMA dengan 'class_indices' notebook Anda
-# {0: 'Bleached', 1: 'Healthy'}
 class_names = ['Bleached', 'Healthy'] 
 
 DB_NAME = "predictions.db"
 
-# --- 2. Load Model ---
-# Model di-load HANYA SEKALI saat server dinyalakan
+# 2. Load Model 
 try:
     model = load_model(MODEL_PATH)
     print(f"Model {MODEL_PATH} berhasil di-load.")
@@ -29,7 +26,7 @@ except Exception as e:
     print(f"ERROR: Gagal me-load model. {e}")
     model = None
 
-# --- 3. Database Helper ---
+# 3. Database Helper 
 def init_db():
     """Inisialisasi database SQLite"""
     conn = sqlite3.connect(DB_NAME)
@@ -61,7 +58,7 @@ def log_prediction(filename, label, confidence, raw_proba):
 # Inisialisasi DB saat startup
 init_db()
 
-# --- 4. Fungsi Helper untuk Preprocessing ---
+# 4. Fungsi Helper untuk Preprocessing
 def preprocess_image(image: Image.Image) -> np.ndarray:
     """Melakukan preprocessing pada gambar (SAMA PERSIS seperti di notebook)"""
     if image.mode != "RGB":
@@ -69,11 +66,11 @@ def preprocess_image(image: Image.Image) -> np.ndarray:
         
     image = image.resize((IMG_HEIGHT, IMG_WIDTH))
     image_array = img_to_array(image)
-    image_array = image_array / 255.0  # Normalisasi
-    image_array = np.expand_dims(image_array, axis=0) # Tambah dimensi batch
+    image_array = image_array / 255.0  
+    image_array = np.expand_dims(image_array, axis=0) 
     return image_array
 
-# --- 5. Endpoint Prediksi ---
+# 5. Endpoint Prediksi 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
     """
@@ -90,7 +87,7 @@ async def predict(file: UploadFile = File(...)):
     # 2. Lakukan prediksi
     prediction_proba = model.predict(processed_image)[0][0]
     
-    # 3. Tentukan kelas (sesuai notebook)
+    # 3. Tentukan kelas 
     if prediction_proba > 0.5:
         class_index = 1
         confidence = prediction_proba
@@ -100,7 +97,7 @@ async def predict(file: UploadFile = File(...)):
         
     class_label = class_names[class_index]
     
-    # 4. Log ke Database (Poin 7)
+    # 4. Log ke Database 
     log_prediction(
         file.filename, 
         class_label, 
@@ -116,6 +113,6 @@ async def predict(file: UploadFile = File(...)):
         "raw_probability": float(prediction_proba)
     }
 
-# --- 6. Jalankan Server (Hanya untuk testing lokal) ---
+# 6. Jalankan Server (Hanya untuk testing lokal) 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
